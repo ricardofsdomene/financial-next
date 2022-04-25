@@ -14,20 +14,100 @@ import {
   Checkbox,
   useBreakpointValue,
   Spinner,
+  useToast,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { useState } from "react";
-import { RiAddLine } from "react-icons/ri";
+import { useEffect, useState } from "react";
+import { RiAddLine, RiCloseCircleFill } from "react-icons/ri";
 import { useQuery } from "react-query";
+
+import dateformat, { i18n } from "dateformat";
 
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
+import { api } from "../../services/apiClient";
 import { useUsers } from "../../services/hooks/useUsers";
 
 export default function UserList() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isFetching, error } = useUsers(page);
+
+  const [users, setUsers] = useState([]);
+
+  const [selected, setSelected] = useState([]);
+
+  i18n.dayNames = [
+    "Seg",
+    "Ter",
+    "Qua",
+    "Qui",
+    "Sex",
+    "Sáb",
+    "Dom",
+    "Domingo",
+    "Segunda",
+    "Terça",
+    "Quarta",
+    "Quinta",
+    "Sexta",
+    "Sábado",
+  ];
+
+  i18n.monthNames = [
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+
+  async function getUsers() {
+    await api.get("/user/users").then((res) => {
+      setUsers(res.data);
+    });
+  }
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  const toast = useToast();
+
+  async function deleteUser(id) {
+    await api
+      .delete(`/user/${id}`)
+      .then(() => {
+        toast({
+          title: "Deletado com sucesso",
+          status: "success",
+          duration: 1000,
+          isClosable: true,
+        });
+      })
+      .finally(() => {
+        getUsers();
+      });
+  }
 
   const isWideVersion = useBreakpointValue({
     base: false,
@@ -45,29 +125,45 @@ export default function UserList() {
               Usuários
             </Heading>
 
-            <Link href="/users/create" passHref>
+            <Flex>
+              {selected.length > 0 && (
+                <Button
+                  onClick={() => {
+                    selected.map((s, i) => {
+                      deleteUser(s);
+                    });
+                  }}
+                  as="a"
+                  size="sm"
+                  fontSize="sm"
+                  colorScheme="pink"
+                  leftIcon={<Icon as={RiCloseCircleFill} fontSize="20" />}
+                >
+                  Deletar {selected.length}
+                </Button>
+              )}
               <Button
+                ml="3"
                 as="a"
                 size="sm"
                 fontSize="sm"
-                colorScheme="pink"
+                colorScheme="facebook"
                 leftIcon={<Icon as={RiAddLine} fontSize="20" />}
               >
                 Criar novo
               </Button>
-            </Link>
+            </Flex>
           </Flex>
 
-          {isLoading ? (
+          {!users ? (
             <Flex justify="center">
               <Spinner />
             </Flex>
-          ) : error ? (
-            <Flex>
-              <Text>Falha ao obter dados dos usuários.</Text>
-            </Flex>
           ) : (
             <>
+              {selected.map((s, i) => {
+                return <Text color="#333">{s}</Text>;
+              })}
               <Table colorScheme="whiteAlpha">
                 <Thead>
                   <Tr>
@@ -80,24 +176,45 @@ export default function UserList() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {/* {data.map((user) => {
+                  {users.map((user) => {
                     return (
                       <Tr>
                         <Td px={["6"]}>
-                          <Checkbox colorScheme="pink" />
+                          <Checkbox
+                            colorScheme="pink"
+                            onChange={(e) => {
+                              if (selected.includes(user._id)) {
+                                let filtered = selected.filter(
+                                  (i) => i === user._ud
+                                );
+                                setSelected([...selected, filtered]);
+                              } else {
+                                setSelected([...selected, user._id]);
+                              }
+                            }}
+                          />
                         </Td>
                         <Td>
                           <Box>
-                            <Text fontWeight="bold">{user.name}</Text>
+                            <Text fontWeight="bold" color="#333">
+                              {user.name}
+                            </Text>
                             <Text fontSize="sm" color="gray.300">
                               {user.email}
                             </Text>
                           </Box>
                         </Td>
-                        {isWideVersion && <Td>{user.createdAt}</Td>}
+                        {isWideVersion && (
+                          <Td color="#333">
+                            {dateformat(
+                              user.createdAt,
+                              "ddd dd mmm yyyy HH:MM:ss"
+                            )}
+                          </Td>
+                        )}
                       </Tr>
                     );
-                  })} */}
+                  })}
                 </Tbody>
               </Table>
 

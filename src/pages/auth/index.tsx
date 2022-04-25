@@ -76,11 +76,7 @@ export default function Auth() {
         </Flex>
       ) : (
         <>
-          <Flex
-            zIndex="1"
-            flexDir="row"
-            justifyContent="space-between"
-          >
+          <Flex zIndex="1" flexDir="row" justifyContent="space-between">
             {isWideVersion && (
               <Flex
                 flexDir="column"
@@ -109,10 +105,10 @@ export default function Auth() {
                 alignItems="center"
               >
                 <Flex flexDir="column" mt={isWideVersion ? 0 : -20}>
-                <Image
+                  <Image
                     mt={-10}
                     ml={-8}
-                    src="http://192.168.1.60:5556/assets/white-logo.png"
+                    src="http://100.99.231.68:5556/images/logo.png"
                     width={100}
                     height={100}
                   />
@@ -207,8 +203,8 @@ export default function Auth() {
               </Flex>
             ) : (
               <Flex
-              style={{ padding: 10 }}
-              flexDir="column"
+                style={{ padding: 10 }}
+                flexDir="column"
                 bg="#eee"
                 h="100vh"
                 w={isWideVersion ? "50vw" : "100vw"}
@@ -219,7 +215,7 @@ export default function Auth() {
                   <Image
                     mt={-10}
                     ml={-8}
-                    src="http://192.168.1.60:5556/assets/white-logo.png"
+                    src="http://100.99.231.68:5556/images/logo.png"
                     width={100}
                     height={100}
                   />

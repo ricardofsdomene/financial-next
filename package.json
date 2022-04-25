@@ -16,6 +16,7 @@
     "@hookform/resolvers": "^2.8.8",
     "apexcharts": "^3.33.2",
     "axios": "^0.26.1",
+    "dateformat": "^5.0.3",
     "framer-motion": "^6.2.8",
     "jwt-decode": "^3.1.2",
     "next": "12.1.0",

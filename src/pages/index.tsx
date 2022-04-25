@@ -81,7 +81,7 @@ export default function Index() {
     await api
       .get(`/core/vagas`)
       .then((response) => {
-        setVagas(response.data);
+        setVagas(response.data.docs);
       })
       .catch((error) => {
         console.log("error", error);
@@ -399,6 +399,7 @@ export default function Index() {
                                 (vaga) => vaga !== vaga._id
                               );
                               setVagas(vagasFiltered);
+                              fetchVagas();
                             })
                           }
                           style={{
@@ -701,7 +702,12 @@ export default function Index() {
     await api
       .delete(`http://localhost:5556/core/vaga/${id}`)
       .then((response) => {
-        alert(response.data);
+        toast({
+          description: "Vaga deletada com sucesso!",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
       });
   }
 
@@ -809,7 +815,7 @@ export default function Index() {
       <Drawer isOpen={isOpen} placement="bottom" onClose={onClose}>
         <DrawerOverlay />
         <DrawerContent>
-        <DrawerCloseButton bg="#eee" mt="2" mr="2" color="#000" />
+          <DrawerCloseButton bg="#eee" mt="2" mr="2" color="#000" />
           <DrawerHeader color="#333" fontSize="xl">
             Filtre para encontrar sua vaga
           </DrawerHeader>

@@ -36,6 +36,7 @@ import {
   Heading,
   VStack,
   Divider,
+  FormLabel,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { FiCheck, FiEdit2 } from "react-icons/fi";
@@ -86,6 +87,23 @@ export function Header() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
+  const [cargo, setCargo] = useState("");
+  const [tipo, setTipo] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [formato, setFormato] = useState("");
+  const [localidade, setLocalidade] = useState("");
+
+  const [requisito, setRequisito] = useState("");
+  const [requisitos, setRequisitos] = useState([]);
+  const [habilidade, setHabilidade] = useState("");
+  const [habilidades, setHabilidades] = useState([]);
+  const [beneficio, setBeneficio] = useState("");
+  const [beneficios, setBeneficios] = useState([]);
+
+  const requisitoRef = useRef() as React.MutableRefObject<HTMLInputElement>;
+  const habilidadeRef = useRef() as React.MutableRefObject<HTMLInputElement>;
+  const beneficioRef = useRef() as React.MutableRefObject<HTMLInputElement>;
+
   const btnRef = useRef();
 
   const isWideVersion = useBreakpointValue({
@@ -96,41 +114,56 @@ export function Header() {
   const toast = useToast();
   const router = useRouter();
 
-  type CreateUserFormData = {
-    name: string;
-    email: string;
-    password: string;
+  type CreateVagaFormData = {
+    cargo: string;
+    tipo: string;
+    formato: string;
+    descricao: string;
+    localidade: string;
+    beneficios: string[];
+    habilidades: string[];
+    requisitos: string[];
   };
 
-  const createUserFormSchema = yup.object().shape({
+  const createVagaFormSchema = yup.object().shape({
     cargo: yup.string().required("Cargo obrigatório"),
     tipo: yup.string().required("Tipo obrigatório"),
-    password: yup
-      .string()
-      .required("Senha obrigatória")
-      .min(6, "No minimo 6 caracteres"),
-    password_confirmation: yup
-      .string()
-      .oneOf([null, yup.ref("password")], "As senhas precisam ser iguais"),
+    formato: yup.string().required("Formato obrigatório"),
+    descricao: yup.string().required("Descrição obrigatória"),
+    localidade: yup.string().required("Localidade obrigatório"),
+    beneficios: yup.array(),
+    habilidades: yup.array(),
+    requisitos: yup.array(),
   });
 
   const { register, handleSubmit, formState } = useForm({
-    resolver: yupResolver(createUserFormSchema),
+    resolver: yupResolver(createVagaFormSchema),
   });
 
-  const handleCreateUser: SubmitHandler<CreateUserFormData> = async (
+  const handleCreateVaga: SubmitHandler<CreateVagaFormData> = async (
     values
   ) => {
-    await axios
-      .post("http://161.35.102.170:5556/auth/signup", {
-        name: values.name,
-        email: values.email,
-        password: values.password,
+    await api
+      .post("/core/vaga", {
+        empresa: {
+          name: "My company",
+          _id: "0",
+          avatar:
+            "https://www.latinfinance.com/media/3939/btg-pactual.png?width=1200",
+        },
+        cargo: values.cargo,
+        tipo: values.tipo,
+        descricao: values.descricao,
+        formato: values.formato,
+        requisitos: values.requisitos,
+        habilidades: values.habilidades,
+        beneficios: values.beneficios,
+        localidade: values.localidade,
       })
       .then((response) => {
         console.log(response.data);
-        if (response.data.status === "Usuário criado com sucesso!") {
-          router.push("/users");
+        if (response.data.status === "Vaga adicionada com sucesso!") {
+          console.log(response.data.vaga);
         } else {
           console.log("Tente novamente mais tarde");
         }
@@ -362,6 +395,7 @@ export function Header() {
           <div
             style={{
               display: "flex",
+              paddingTop: 30,
               flexDirection: "column",
               height: "100%",
             }}
@@ -480,61 +514,101 @@ export function Header() {
     );
   }
 
-  function AddVaga() {
-    return (
-      <Box
-        as="form"
-        overflowY="scroll"
-        flex="1"
-        borderRadius={8}
-        onSubmit={handleSubmit(handleCreateUser)}
-      >
-        <DrawerCloseButton bg="#e0e0e0" mt="2" mr="2" color="#000" />
-        <VStack>
-          <Input
-            name="name"
-            type="text"
-            label="Cargo"
-            error={formState.errors.cargo}
-            {...register("cargo")}
-          />
-          <Input
-            name="tipo"
-            type="text"
-            label="Tipo"
-            error={formState.errors.email}
-            {...register("tipo")}
-          />
+  function SelectEmpresa() {
+    const [empresas, setEmpresas] = useState([]);
 
-          <Input
-            name="password"
-            type="password"
-            label="Senha"
-            error={formState.errors.password}
-            {...register("password")}
+    useEffect(() => {
+      getEmpresas();
+    }, []);
+
+    async function getEmpresas() {
+      await api.get("/empresa/empresas").then((res) => {
+        setEmpresas(res.data.docs);
+      });
+    }
+
+    return (
+      <Flex flexDir="column">
+        <Flex
+          mt="1"
+          as="label"
+          h={43}
+          w="100%"
+          mr={!isWideVersion && 3}
+          align="center"
+          alignSelf="center"
+          color="gray.200"
+          bg="#e0e0e0"
+          borderRadius="5"
+        >
+          <ChakraInput
+            color="#333"
+            variant="unstyled"
+            fontSize="sm"
+            px="4"
+            mr="4"
+            w="95%"
+            placeholder="Buscar na plataforma"
+            _placeholder={{ color: "gray.400" }}
           />
-          <Input
-            name="password_confirmation"
-            type="password"
-            label="Confirmação de senha"
-            error={formState.errors.password_confirmation}
-            {...register("password_confirmation")}
-          />
-        </VStack>
-      </Box>
+          <Button
+            cursor="pointer"
+            bg="#e9e9e9"
+            borderWidth={1}
+            borderColor="#d3d3d3"
+            borderRadius="5"
+            h="43"
+            px="5"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Icon as={RiSearchLine} color="#333" fontSize="20" />
+          </Button>
+        </Flex>
+        <Flex flexDir="column" mt="3">
+          {empresas.map((e, i) => {
+            return (
+              <Flex
+                borderRadius="5"
+                align="center"
+                px="5"
+                justify="center"
+                key={i}
+                cursor="pointer"
+                width="100%"
+                height="43"
+                bg="#e0e0e0"
+                justifyContent="space-between"
+              >
+                {/* <Image src={e.avatar} width="33" height="33" /> */}
+                <Text color="#000">{e.name}</Text>
+              </Flex>
+            );
+          })}
+        </Flex>
+      </Flex>
     );
   }
 
   function AddVagaFooter() {
     return (
       <Button
-        mt="2"
-        w="100%"
+        width="100%"
+        onClick={() => {
+          handleCreateVaga({
+            cargo,
+            tipo,
+            descricao,
+            formato,
+            requisitos,
+            habilidades,
+            beneficios,
+            localidade,
+          });
+        }}
         bg="facebook.400"
-        isLoading={formState.isSubmitting}
-        onClick={() => {}}
       >
-        Adicionar
+        <Text color="#FFF">Adicionar vaga</Text>
       </Button>
     );
   }
@@ -561,7 +635,7 @@ export function Header() {
           onClose();
         }}
       >
-        {profileTab === "Dados" ? "Salvar" : "Fechar"}
+        Fechar
       </Button>
     );
   }
@@ -580,37 +654,180 @@ export function Header() {
       >
         <DrawerOverlay />
         <DrawerContent bg="#eee">
-          {profileTab !== "Dados" ? (
-            <>
-              <DrawerHeader color="#555">
-                {drawer === "AddVaga" ? "Criar uma nova vaga" : drawer}
-              </DrawerHeader>
-              <Divider />
-            </>
-          ) : (
-            <Flex
-              onClick={() => {
-                setProfileTab("");
-                onClose();
-              }}
-              align="center"
-              justify="center"
-              p="2"
-              h={43}
-              w={43}
-              mt="6"
-              ml="5"
-              borderRadius="12"
-              bg="#d0d0d0"
-            >
-              <Icon as={RiArrowLeftFill} color="#333" />
-            </Flex>
-          )}
-
+          <DrawerHeader color="#555">
+            {drawer === "SelectEmpresa" && (
+              <Flex
+                style={{ height: 35, width: 35 }}
+                onClick={() => {
+                  setDrawer("AddVaga");
+                }}
+                borderRadius="5"
+                p="4"
+                mb="3"
+                justifyContent="center"
+                alignItems="center"
+                bg="#e0e0e0"
+              >
+                <Icon as={RiArrowLeftFill} color="#000" fontSize={16} />
+              </Flex>
+            )}
+            {drawer === "AddVaga"
+              ? "Criar uma nova vaga"
+              : drawer === "SelectEmpresa"
+              ? "Selecionar empresa"
+              : drawer}
+          </DrawerHeader>
+          <Divider />
           <DrawerBody bg="#eee">
             {drawer === "Notificações" && <Notificacoes />}
             {drawer === "Perfil" && <Perfil />}
-            {drawer === "AddVaga" && <AddVaga />}
+            {drawer === "SelectEmpresa" && <SelectEmpresa />}
+            {drawer === "AddVaga" && (
+              <Box
+                as="form"
+                overflowY="scroll"
+                flex="1"
+                borderRadius={8}
+                onSubmit={handleSubmit(handleCreateVaga)}
+              >
+                <DrawerCloseButton bg="#e0e0e0" mt="2" mr="2" color="#000" />
+                <VStack>
+                  {/* <Input
+                   name="name"
+                   type="text"
+                   label="Cargo"
+                   error={formState.errors.cargo}
+                   {...register("cargo")}
+                 /> */}
+                  <div style={{ height: 10 }} />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Empresa
+                  </FormLabel>
+                  <ChakraInput
+                    onClick={() => setDrawer("SelectEmpresa")}
+                    mb="3"
+                    cursor="pointer"
+                    placeholder="Selecionar empresa"
+                    color="#000"
+                    onChange={(e) => setTipo(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Cargo
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setCargo(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Tipo
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setTipo(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Descrição
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setDescricao(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Formato
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setFormato(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Localidade
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setLocalidade(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Requisitos
+                  </FormLabel>
+                  <ChakraInput
+                    ref={requisitoRef}
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setRequisito(e.target.value)}
+                  />
+                  <Button
+                    mt="3"
+                    mb="3"
+                    width="100%"
+                    onClick={() => {
+                      requisitoRef.current.value = "";
+                      setRequisitos([...requisitos, requisito]);
+                    }}
+                    bg="#e0e0e0"
+                  >
+                    <Text color="#000">Adicionar requisito</Text>
+                  </Button>
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Habilidades
+                  </FormLabel>
+                  <ChakraInput
+                    mt="5"
+                    ref={habilidadeRef}
+                    color="#000"
+                    onChange={(e) => setHabilidade(e.target.value)}
+                    mb="3"
+                  />
+                  <Button
+                    mb="3"
+                    width="100%"
+                    onClick={() => {
+                      habilidadeRef.current.value = "";
+                      setHabilidades([...habilidades, habilidade]);
+                    }}
+                    bg="#e0e0e0"
+                  >
+                    <Text color="#000">Adicionar habilidade</Text>
+                  </Button>
+                  {beneficios && (
+                    <>
+                      {beneficios.map((beneficio, i) => {
+                        return (
+                          <Text mr="4" color="#000">
+                            {beneficio}
+                          </Text>
+                        );
+                      })}
+                    </>
+                  )}
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Beneficios
+                  </FormLabel>
+                  <ChakraInput
+                    placeholder="Beneficios"
+                    color="#000"
+                    ref={beneficioRef}
+                    onChange={(e) => setBeneficio(e.target.value)}
+                    mb="3"
+                  />
+                  <Button
+                    width="100%"
+                    mb="3"
+                    onClick={() => {
+                      setBeneficios([...beneficios, beneficio]);
+                      beneficioRef.current.value = "";
+                    }}
+                    bg="#e0e0e0"
+                  >
+                    <Text color="#000">Adicionar beneficio</Text>
+                  </Button>
+                </VStack>
+              </Box>
+            )}
           </DrawerBody>
 
           <DrawerFooter flexDir="column">
