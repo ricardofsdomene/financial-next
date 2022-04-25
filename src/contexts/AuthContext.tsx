@@ -89,8 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     if (user) {
-      // dashboard permission
-      if (user.email !== "teste") {
+      if (user.email !== "ricardofsdomene@icloud.com") {
         if (router.pathname === "/dashboard") {
           router.push("/");
         }

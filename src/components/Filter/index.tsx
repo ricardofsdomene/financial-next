@@ -23,16 +23,16 @@ export function Filter() {
   const { isOpen, onClose } = useSidebarDrawer();
 
   const [showTipo, setShowTipo] = useState(true);
-  const [tipo, setTipo] = useState("tempo integral");
+  const [tipo, setTipo] = useState("");
 
   const [showExperience, setShowExperience] = useState(true);
-  const [experience, setExperience] = useState("primeiro estágio");
+  const [experience, setExperience] = useState("");
 
   const [showFormato, setShowFormato] = useState(true);
-  const [formato, setFormato] = useState("presencial");
+  const [formato, setFormato] = useState("");
 
-  const [showData, setShowData] = useState(false);
-  const [data, setData] = useState("a qualquer momento");
+  const [showData, setShowData] = useState(true);
+  const [data, setData] = useState("");
 
   const [showEmpresa, setShowEmpresa] = useState(true);
   const [empresa, setEmpresa] = useState("BTG Pactual");
@@ -75,7 +75,7 @@ export function Filter() {
             Tipo da vaga
           </Text>
           <Icon
-            as={showFormato ? FiChevronUp : FiChevronDown}
+            as={showTipo ? FiChevronUp : FiChevronDown}
             color="#000"
             size={20}
           />
@@ -125,10 +125,10 @@ export function Filter() {
           w="100%"
         >
           <Text color="#000" fontWeight="bold" fontSize="lg">
-            Nivel de experiência
+            Experiência
           </Text>
           <Icon
-            as={showFormato ? FiChevronUp : FiChevronDown}
+            as={showExperience ? FiChevronUp : FiChevronDown}
             color="#000"
             size={20}
           />
@@ -276,10 +276,10 @@ export function Filter() {
       flexDir="column"
       as="aside"
       justifyContent="space-between"
-      p="4"
+      pr="4"
+      pl="4"
       bg="#eee"
-      borderRight="1px solid #e0e0e0"
-      overflowY={showFormato || showData ? "scroll" : null}
+      overflowY="scroll"
       w="64"
       mr="8"
       h="90vh"

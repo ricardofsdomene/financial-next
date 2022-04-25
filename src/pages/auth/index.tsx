@@ -3,6 +3,7 @@ import {
   Divider,
   Flex,
   Heading,
+  Image,
   Img,
   Input,
   Modal,
@@ -19,7 +20,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useReducer, useState } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 
 export default function Auth() {
@@ -68,14 +69,7 @@ export default function Auth() {
   }
 
   return (
-    <Flex
-      align="center"
-      justify="center"
-      mx="auto"
-      h={size.height}
-      py="10"
-      maxW={isWideVersion ? 1480 : 350}
-    >
+    <Flex maxH={size.height} h="100vh" bg="#eee">
       {user ? (
         <Flex justify="center" align="center" h="100%">
           <Spinner size="xl" color="facebook.400" />
@@ -84,132 +78,88 @@ export default function Auth() {
         <>
           <Flex
             zIndex="1"
-            flexDir="column"
+            flexDir="row"
             justifyContent="space-between"
-            h="100%"
           >
-            <Flex flexDir="column">
-              <Text fontSize="4xl" color="#000" fontFamily="sans-serif">
-                Seja bem-vindo(a) ao seu Portal Financeiro
-              </Text>
-              <Text fontSize="lg" fontFamily="sans-serif" color="#333">
-                Em seguida, você irá fornecer alguns dados sobre você, suas
-                informações de contato.
-              </Text>
-            </Flex>
-
-            <Flex flexDir="column">
-              <Flex flexDir="row" mt="4" align="center">
-                <Text fontSize="lg" color="#333" fontFamily="sans-serif">
-                  Se você já possui conta
+            {isWideVersion && (
+              <Flex
+                flexDir="column"
+                bg="#7034C6"
+                h="100vh"
+                w={isWideVersion ? "50vw" : "100vw"}
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Text fontSize="6xl" width={350} fontWeight="bold" color="#FFF">
+                  FinancialCo
                 </Text>
-                <Text
-                  onClick={() => {
-                    setLogin(true);
-                    onOpen();
-                  }}
-                  fontSize="lg"
-                  ml="1.5"
-                  color="facebook.400"
-                  cursor="pointer"
-                  fontFamily="sans-serif"
-                >
-                  entrar agora
+                <Text fontSize="lg" mt={-3} width={350} color="#FFF">
+                  A plataforma do mercado financeiro.
                 </Text>
               </Flex>
-              <Button as={Flex} flexDir="row" mt="5" bg="#FFF" p="7">
-                <Img
-                  src="https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-suite-everything-you-need-know-about-google-newest-0.png"
-                  h="30"
-                  w="30"
-                />
-                <Text fontSize="md" color="#000" fontFamily="sans-serif" ml="3">
-                  Continuar com Google
-                </Text>
-              </Button>
-              <Text
-                fontSize="sm"
-                w="100%"
-                color="#333"
-                textAlign="center"
-                mt="3"
+            )}
+            {login ? (
+              <Flex
+                style={{ padding: 10 }}
+                flexDir="column"
+                bg="#eee"
+                h="100vh"
+                w={isWideVersion ? "50vw" : "100vw"}
+                justifyContent="center"
+                alignItems="center"
               >
-                ou
-              </Text>
-              <Button
-                as={Flex}
-                onClick={onOpen}
-                flexDir="row"
-                mt="3"
-                bg="facebook.400"
-                p="7"
-              >
-                <Text fontSize="md" color="#FFF" fontFamily="sans-serif" ml="3">
-                  Continuar com e-mail
-                </Text>
-              </Button>
-            </Flex>
-          </Flex>
-
-          <Modal
-            isOpen={isOpen}
-            onClose={() => {
-              setEmail("");
-              setPassword("");
-              setName("");
-              setLogin(false);
-              onClose();
-            }}
-            isCentered={isWideVersion}
-            size={isWideVersion ? "md" : "xs"}
-          >
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader color="#000">
-                {login ? "Entrar agora" : "Conecte-se agora"}
-              </ModalHeader>
-              <ModalCloseButton bg="#eee" color="#000" />
-              <ModalBody>
-                {!login && (
-                  <>
-                    <Text color="green.800">Nome Completo</Text>
-                    <Input
-                      borderRadius="5"
-                      bg="#fff"
-                      color="#333"
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </>
-                )}
-                <Text color="green.800" mt="3">
-                  Email
-                </Text>
-                <Input
-                  borderRadius="5"
-                  bg="#fff"
-                  color="#333"
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Text color="green.800" mt="3">
-                  {login ? "Sua senha" : "Senha (8 ou mais caracteres)"}
-                </Text>
-                <Input
-                  borderRadius="5"
-                  bg="#fff"
-                  type="password"
-                  color="#333"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Text color="green.800" mt="3" fontSize="xs">
-                  Ao clicar em continuar você concorda com os termos de uso e
-                  politica de privacidade.
-                </Text>
-              </ModalBody>
-
-              <ModalFooter>
-                <Button
-                  onClick={() => {
-                    if (login) {
+                <Flex flexDir="column" mt={isWideVersion ? 0 : -20}>
+                <Image
+                    mt={-10}
+                    ml={-8}
+                    src="http://192.168.1.60:5556/assets/white-logo.png"
+                    width={100}
+                    height={100}
+                  />
+                  <Text
+                    fontSize={["2xl", "3xl", "4xl"]}
+                    fontWeight="bold"
+                    color="#333"
+                  >
+                    Entrar na sua conta
+                  </Text>
+                  <Text fontSize={["md", "lg"]} color="#333" mb={3}>
+                    Estavamos esperando por voce
+                  </Text>
+                  <Text color="#333" fontWeight="bold" mt="3">
+                    Email
+                  </Text>
+                  <Input
+                    height={50}
+                    borderRadius="full"
+                    bg="#fff"
+                    mt="2"
+                    color="#333"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <Flex justifyContent="space-between">
+                    <Text color="#333" fontWeight="bold" mt="3">
+                      Sua senha
+                    </Text>
+                    <Text color="#7034C6" fontWeight="bold" mt="3" mr="3">
+                      Esqueceu sua senha?
+                    </Text>
+                  </Flex>
+                  <Input
+                    height={50}
+                    borderRadius="full"
+                    bg="#fff"
+                    type="password"
+                    mt="2"
+                    color="#333"
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Text color="#333" mt="6" fontSize="xs">
+                    Ao clicar em Continuar você concorda com os termos de uso e
+                    politica de privacidade.
+                  </Text>
+                  <Button
+                    onClick={() => {
                       signIn({ email, password }).then((res) => {
                         let desc = JSON.stringify(res).replace(/['"]+/g, "");
                         if (desc === "Usuario autenticado com sucesso") {
@@ -226,7 +176,110 @@ export default function Auth() {
                           });
                         }
                       });
-                    } else {
+                    }}
+                    height={50}
+                    mt="3"
+                    bg="#7034C6"
+                    borderRadius="full"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Text color="#FFF" fontSize="lg">
+                      Continuar
+                    </Text>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setLogin(!login);
+                    }}
+                    height={50}
+                    mt="2"
+                    bg="transparent"
+                    borderRadius="full"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Text color="#7034C6" fontSize="lg">
+                      Clique aqui se voce ainda nao e registrado
+                    </Text>
+                  </Button>
+                </Flex>
+              </Flex>
+            ) : (
+              <Flex
+              style={{ padding: 10 }}
+              flexDir="column"
+                bg="#eee"
+                h="100vh"
+                w={isWideVersion ? "50vw" : "100vw"}
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Flex flexDir="column" mt={isWideVersion ? 0 : -20}>
+                  <Image
+                    mt={-10}
+                    ml={-8}
+                    src="http://192.168.1.60:5556/assets/white-logo.png"
+                    width={100}
+                    height={100}
+                  />
+                  <Text
+                    fontSize={["2xl", "3xl", "4xl"]}
+                    fontWeight="bold"
+                    color="#333"
+                  >
+                    Vamos criar sua conta
+                  </Text>
+                  <Text fontSize={["md", "lg"]} color="#333" mb={3}>
+                    Estavamos esperando por voce
+                  </Text>
+                  <Text color="#333" fontWeight="bold" mt="3">
+                    Nome Completo
+                  </Text>
+                  <Input
+                    height={50}
+                    borderRadius="full"
+                    bg="#fff"
+                    mt="2"
+                    color="#333"
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                  <Text color="#333" fontWeight="bold" mt="3">
+                    Email
+                  </Text>
+                  <Input
+                    height={50}
+                    borderRadius="full"
+                    bg="#fff"
+                    mt="2"
+                    color="#333"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <Flex justifyContent="space-between">
+                    <Text color="#333" fontWeight="bold" mt="3">
+                      Senha (8 ou mais caracteres)
+                    </Text>
+                    {login && (
+                      <Text color="#7034C6" fontWeight="bold" mt="3" mr="3">
+                        Esqueceu sua senha?
+                      </Text>
+                    )}
+                  </Flex>
+                  <Input
+                    height={50}
+                    borderRadius="full"
+                    bg="#fff"
+                    type="password"
+                    mt="2"
+                    color="#333"
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Text color="#333" mt="6" fontSize="xs">
+                    Ao clicar em Continuar você concorda com os termos de uso e
+                    politica de privacidade.
+                  </Text>
+                  <Button
+                    onClick={() => {
                       signUp({ name, email, password }).then((res) => {
                         let desc = JSON.stringify(res).replace(/['"]+/g, "");
                         if (desc === "Usuario autenticado com sucesso") {
@@ -243,16 +296,37 @@ export default function Auth() {
                           });
                         }
                       });
-                    }
-                  }}
-                  bg="facebook.400"
-                  w="100%"
-                >
-                  Continuar
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
+                    }}
+                    height={50}
+                    mt="3"
+                    bg="#7034C6"
+                    borderRadius="full"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Text color="#FFF" fontSize="lg">
+                      Continuar
+                    </Text>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setLogin(true);
+                    }}
+                    height={50}
+                    mt="2"
+                    bg="transparent"
+                    borderRadius="full"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Text color="#7034C6" fontSize="lg">
+                      Clique aqui se voce ja possui conta
+                    </Text>
+                  </Button>
+                </Flex>
+              </Flex>
+            )}
+          </Flex>
         </>
       )}
     </Flex>

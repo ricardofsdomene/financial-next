@@ -8,11 +8,12 @@ import {
   theme,
   Spinner,
   useToast,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 
 import dynamic from "next/dynamic";
 
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Header } from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { ApexOptions } from "apexcharts";
@@ -84,6 +85,48 @@ export default function Dashboard() {
 
   const router = useRouter();
 
+  const isWideVersion = useBreakpointValue({
+    base: false,
+    md: true,
+    lg: true,
+  });
+
+  function useWindowSize() {
+    // Initialize state with undefined width/height so server and client renders match
+    // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
+    const [windowSize, setWindowSize] = useState({
+      width: undefined,
+      height: undefined,
+    });
+
+    function handleResize() {
+      // Set window width/height to state
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+
+    useEffect(() => {
+      // only execute all the code below in client side
+      if (typeof window !== "undefined") {
+        // Handler to call on window resize
+
+        // Add event listener
+        window.addEventListener("resize", handleResize);
+
+        // Call handler right away so state gets updated with initial window size
+        handleResize();
+
+        // Remove event listener on cleanup
+        return () => window.removeEventListener("resize", handleResize);
+      }
+    }, []); // Empty array ensures that effect is only run on mount
+    return windowSize;
+  }
+
+  const size = useWindowSize();
+
   return (
     <Flex direction="column" h="100vh">
       {user && (
@@ -96,11 +139,12 @@ export default function Dashboard() {
             <>
               <Header />
 
-              <Flex w="100vw" maxWidth={1480} mx="auto" px="6">
+              <Flex w="100vw" mx="auto">
                 <Sidebar />
 
                 <SimpleGrid
                   flex="1"
+                  p="4"
                   gap="4"
                   minChildWidth={320}
                   alignItems="flex-start"
@@ -128,6 +172,24 @@ export default function Dashboard() {
                     />
                   </Box>
                 </SimpleGrid>
+                {size.width >= 1200 && (
+                  <>
+                    {isWideVersion && (
+                      <Flex justifyContent="center" width="20%" p="4">
+                        <Flex
+                          width="100%"
+                          borderRadius="12"
+                          justifyContent="center"
+                          alignItems="center"
+                          bg="#eee"
+                          p="4"
+                        >
+                          <Text color="#000">{size.width}</Text>
+                        </Flex>
+                      </Flex>
+                    )}
+                  </>
+                )}
               </Flex>
             </>
           )}

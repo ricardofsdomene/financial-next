@@ -56,7 +56,6 @@ export function Header() {
       <Logo />
 
       <Flex align="center" ml="auto">
-        {isWideVersion && <Notifications />}
         <Profile showProfileData={isWideVersion} />
       </Flex>
     </Flex>

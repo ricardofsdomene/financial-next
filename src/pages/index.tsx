@@ -12,6 +12,14 @@ import {
   IconButton,
   Img,
   Input,
+  Drawer,
+  DrawerBody,
+  DrawerFooter,
+  DrawerHeader,
+  useDisclosure,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
   SimpleGrid,
   Spinner,
   Text,
@@ -19,6 +27,7 @@ import {
   useEditableControls,
   useEditableState,
   useToast,
+  Checkbox,
 } from "@chakra-ui/react";
 
 import React, { useContext, useEffect, useReducer, useState } from "react";
@@ -28,14 +37,34 @@ import { Header } from "../components/Header";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { api } from "../services/apiClient";
-import { FiCheck, FiEdit2, FiTrash2 } from "react-icons/fi";
+import {
+  FiChevronDown,
+  FiChevronUp,
+  FiCheck,
+  FiEdit2,
+  FiTrash2,
+} from "react-icons/fi";
 import { RiCloseFill } from "react-icons/ri";
+import { GoSettings } from "react-icons/go";
+import { SearchBox } from "../components/Header/SearchBox";
 
 export default function Index() {
   const { user, signOut } = useContext(AuthContext);
 
   const [vagas, setVagas] = useState([]);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const [showTipo, setShowTipo] = useState(true);
+  const [tipo, setTipo] = useState("");
+
+  const [showExperience, setShowExperience] = useState(false);
+  const [experience, setExperience] = useState("");
+
+  const [showFormato, setShowFormato] = useState(false);
+  const [formato, setFormato] = useState("");
+
+  const [showData, setShowData] = useState(false);
+  const [data, setData] = useState("");
 
   const router = useRouter();
   const toast = useToast();
@@ -44,6 +73,7 @@ export default function Index() {
 
   const isWideVersion = useBreakpointValue({
     base: false,
+    md: true,
     lg: true,
   });
 
@@ -61,6 +91,219 @@ export default function Index() {
   useEffect(() => {
     fetchVagas();
   }, []);
+
+  function Tipo() {
+    const tipos = ["tempo Integral", "meio periodo", "temporario", "outros"];
+
+    return (
+      <Flex flexDir="column" w="100%">
+        <Flex
+          onClick={() => setShowTipo(!showTipo)}
+          cursor="pointer"
+          flexDir="row"
+          align="center"
+          justifyContent="space-between"
+          w="100%"
+        >
+          <Text color="#000" fontWeight="bold" fontSize="md">
+            Tipo da vaga
+          </Text>
+          <Icon
+            as={showTipo ? FiChevronUp : FiChevronDown}
+            color="#000"
+            size={20}
+          />
+        </Flex>
+
+        {showTipo && (
+          <>
+            {tipos.map((item, i) => {
+              return (
+                <Flex
+                  onClick={() => setTipo(item)}
+                  cursor="pointer"
+                  mt="3"
+                  flexDir="row"
+                  align="center"
+                  w="100%"
+                >
+                  <Checkbox color="facebook.400" isChecked={item === tipo} />
+                  <Text color="#333" ml="3" mt="0.5" fontSize="sm">
+                    {item}
+                  </Text>
+                </Flex>
+              );
+            })}
+          </>
+        )}
+      </Flex>
+    );
+  }
+
+  function Experience() {
+    const datas = [
+      "primeiro estágio",
+      "1 ano de experiência",
+      "2 anos de experiência",
+      "outros",
+    ];
+
+    return (
+      <Flex flexDir="column" w="100%" mt="5">
+        <Flex
+          onClick={() => setShowExperience(!showExperience)}
+          cursor="pointer"
+          flexDir="row"
+          align="center"
+          justifyContent="space-between"
+          w="100%"
+        >
+          <Text color="#000" fontWeight="bold" fontSize="md">
+            Experiência
+          </Text>
+          <Icon
+            as={showExperience ? FiChevronUp : FiChevronDown}
+            color="#000"
+            size={20}
+          />
+        </Flex>
+
+        {showExperience && (
+          <>
+            {datas.map((item, i) => {
+              return (
+                <Flex
+                  onClick={() => setExperience(item)}
+                  cursor="pointer"
+                  mt="4"
+                  flexDir="row"
+                  align="center"
+                  w="100%"
+                >
+                  <Checkbox
+                    color="facebook.400"
+                    isChecked={item === experience}
+                  />
+                  <Text color="#333" ml="3" mt="0.5" fontSize="sm">
+                    {item}
+                  </Text>
+                </Flex>
+              );
+            })}
+          </>
+        )}
+      </Flex>
+    );
+  }
+
+  function Formato() {
+    const formatos = [
+      "presencial",
+      "remoto",
+      "híbrido",
+      "summer job",
+      "estágio de férias",
+    ];
+
+    return (
+      <Flex flexDir="column" w="100%" mt="5">
+        <Flex
+          onClick={() => setShowFormato(!showFormato)}
+          cursor="pointer"
+          flexDir="row"
+          align="center"
+          justifyContent="space-between"
+          w="100%"
+        >
+          <Text color="#000" fontWeight="bold" fontSize="md">
+            Formato
+          </Text>
+          <Icon
+            as={showFormato ? FiChevronUp : FiChevronDown}
+            color="#000"
+            size={20}
+          />
+        </Flex>
+
+        {showFormato && (
+          <>
+            {formatos.map((item, i) => {
+              return (
+                <Flex
+                  onClick={() => setFormato(item)}
+                  cursor="pointer"
+                  mt="4"
+                  flexDir="row"
+                  align="center"
+                  w="100%"
+                >
+                  <Checkbox color="facebook.400" isChecked={item === formato} />
+                  <Text color="#333" ml="3" mt="0.5" fontSize="sm">
+                    {item}
+                  </Text>
+                </Flex>
+              );
+            })}
+          </>
+        )}
+      </Flex>
+    );
+  }
+
+  function Data() {
+    const datas = [
+      "a qualquer momento",
+      "últimas 24 horas",
+      "última semana",
+      "último mês",
+    ];
+
+    return (
+      <Flex flexDir="column" w="100%" mt="5">
+        <Flex
+          onClick={() => {
+            setShowData(!showData);
+          }}
+          cursor="pointer"
+          flexDir="row"
+          align="center"
+          justifyContent="space-between"
+          w="100%"
+        >
+          <Text color="#333" fontWeight="bold" fontSize="md">
+            Data do anúncio
+          </Text>
+          <Icon
+            as={showData ? FiChevronUp : FiChevronDown}
+            color="#000"
+            size={20}
+          />
+        </Flex>
+
+        {showData && (
+          <>
+            {datas.map((item, i) => {
+              return (
+                <Flex
+                  onClick={() => setData(item)}
+                  cursor="pointer"
+                  mt="4"
+                  flexDir="row"
+                  align="center"
+                  w="100%"
+                >
+                  <Checkbox color="facebook.400" isChecked={item === data} />
+                  <Text color="#333" ml="3" mt="0.5" fontSize="sm">
+                    {item}
+                  </Text>
+                </Flex>
+              );
+            })}
+          </>
+        )}
+      </Flex>
+    );
+  }
 
   function ListVagas() {
     function EditableControls({ param, value, edited }) {
@@ -320,7 +563,7 @@ export default function Index() {
                           mt="6"
                           bg="facebook.400"
                           h="50"
-                          w="90%"
+                          w="100%"
                           mr="2"
                         >
                           <Text color="#FFF" fontSize="md">
@@ -462,34 +705,130 @@ export default function Index() {
       });
   }
 
-  return (
-    <Flex direction="column" h="100vh" bg="#eee">
-      {!user ? (
-        <Flex justify="center" align="center" h="100%">
-          <Spinner size="xl" color="facebook.400" />
-        </Flex>
-      ) : (
-        <>
-          <Header />
+  function useWindowSize() {
+    // Initialize state with undefined width/height so server and client renders match
+    // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
+    const [windowSize, setWindowSize] = useState({
+      width: undefined,
+      height: undefined,
+    });
 
-          <Flex
-            w="100vw"
-            bg="#eee"
-            maxWidth={1480}
-            mx="auto"
-            pr="6"
-            pt="3"
-            pl={!isWideVersion && "6"}
-            pb="6"
-          >
-            <Flex flexDir="row" w="100%"  pt={isWideVersion && "4"}>
-              <Filter />
-              <ListVagas />
-            </Flex>
+    function handleResize() {
+      // Set window width/height to state
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+
+    useEffect(() => {
+      // only execute all the code below in client side
+      if (typeof window !== "undefined") {
+        // Handler to call on window resize
+
+        // Add event listener
+        window.addEventListener("resize", handleResize);
+
+        // Call handler right away so state gets updated with initial window size
+        handleResize();
+
+        // Remove event listener on cleanup
+        return () => window.removeEventListener("resize", handleResize);
+      }
+    }, []); // Empty array ensures that effect is only run on mount
+    return windowSize;
+  }
+
+  const size = useWindowSize();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  return (
+    <>
+      <Flex direction="column" h="100vh" bg="#eee">
+        {!user ? (
+          <Flex justify="center" align="center" h="100%">
+            <Spinner size="xl" color="facebook.400" />
           </Flex>
-        </>
-      )}
-    </Flex>
+        ) : (
+          <>
+            <Header />
+
+            <Flex w="100vw" bg="#eee" p="4">
+              <Flex flexDir="row" w="100%">
+                {isWideVersion && <Filter />}
+                <Flex
+                  flexDir="column"
+                  w={size.width >= 1000 ? "70%" : "100%"}
+                  maxW={1440}
+                >
+                  {!isWideVersion && (
+                    <Flex justifyContent="space-between" mb="7">
+                      <SearchBox isWideVersion={isWideVersion} />
+                      <Flex
+                        onClick={() => onOpen()}
+                        h={53}
+                        w={55}
+                        borderRadius="5"
+                        justifyContent="center"
+                        alignItems="center"
+                        bg="#e9e9e9"
+                        borderWidth={1}
+                        borderColor="#d3d3d3"
+                      >
+                        <Icon as={GoSettings} fontSize={18} color="#333" />
+                      </Flex>
+                    </Flex>
+                  )}
+                  <ListVagas />
+                </Flex>
+                {size.width >= 1200 && (
+                  <>
+                    {isWideVersion && (
+                      <Flex justifyContent="center" width="20%" px="4">
+                        <Flex
+                          width="100%"
+                          borderRadius="12"
+                          justifyContent="center"
+                          alignItems="center"
+                          bg="#e0e0e0"
+                          p="4"
+                        >
+                          <Text color="#000">{size.width}</Text>
+                        </Flex>
+                      </Flex>
+                    )}
+                  </>
+                )}
+              </Flex>
+            </Flex>
+          </>
+        )}
+      </Flex>
+
+      <Drawer isOpen={isOpen} placement="bottom" onClose={onClose}>
+        <DrawerOverlay />
+        <DrawerContent>
+        <DrawerCloseButton bg="#eee" mt="2" mr="2" color="#000" />
+          <DrawerHeader color="#333" fontSize="xl">
+            Filtre para encontrar sua vaga
+          </DrawerHeader>
+
+          <DrawerBody>
+            <Tipo />
+            <Experience />
+            <Formato />
+            <Data />
+          </DrawerBody>
+
+          <DrawerFooter>
+            <Button w="100%" bg="facebook.400" mr={3} onClick={onClose}>
+              Filtrar
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 }
 
