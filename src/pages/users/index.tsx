@@ -83,7 +83,7 @@ export default function UserList() {
 
   async function getUsers() {
     await api.get("/user/users").then((res) => {
-      setUsers(res.data);
+      setUsers(res.data.docs);
     });
   }
 
@@ -133,6 +133,7 @@ export default function UserList() {
                       deleteUser(s);
                     });
                   }}
+                  cursor="pointer"
                   as="a"
                   size="sm"
                   fontSize="sm"
@@ -161,9 +162,6 @@ export default function UserList() {
             </Flex>
           ) : (
             <>
-              {selected.map((s, i) => {
-                return <Text color="#333">{s}</Text>;
-              })}
               <Table colorScheme="whiteAlpha">
                 <Thead>
                   <Tr>
@@ -176,9 +174,9 @@ export default function UserList() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {users.map((user) => {
+                  {users.map((user, i) => {
                     return (
-                      <Tr>
+                      <Tr key={i}>
                         <Td px={["6"]}>
                           <Checkbox
                             colorScheme="pink"

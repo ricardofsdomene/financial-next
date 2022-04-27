@@ -77,7 +77,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const decoded: User = jwtDecode(token);
 
-      api.get(`/auth/user/${decoded._id}`).then((res) => setUser(res.data));
+      api.get(`/auth/user/${decoded._id}`).then((res) => {
+        if(!res.data) {
+          destroyCookie(undefined, "nextauth.token");
+          destroyCookie(undefined, "nextauth.refreshToken");
+          router.push("/auth");
+        } else {
+          setUser(res.data)
+        }
+      });
 
       setCookie(undefined, "nextauth.token", token, {
         maxAge: 60 * 60 * 24 * 30, // 30 days

@@ -51,8 +51,9 @@ import { SearchBox } from "../components/Header/SearchBox";
 export default function Index() {
   const { user, signOut } = useContext(AuthContext);
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const [vagas, setVagas] = useState([]);
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const [showTipo, setShowTipo] = useState(true);
   const [tipo, setTipo] = useState("");
@@ -117,9 +118,10 @@ export default function Index() {
 
         {showTipo && (
           <>
-            {tipos.map((item, i) => {
+            {tipos.map((item, id) => {
               return (
                 <Flex
+                  key={id}
                   onClick={() => setTipo(item)}
                   cursor="pointer"
                   mt="3"
@@ -173,6 +175,7 @@ export default function Index() {
             {datas.map((item, i) => {
               return (
                 <Flex
+                  key={i}
                   onClick={() => setExperience(item)}
                   cursor="pointer"
                   mt="4"
@@ -230,6 +233,7 @@ export default function Index() {
             {formatos.map((item, i) => {
               return (
                 <Flex
+                  key={i}
                   onClick={() => setFormato(item)}
                   cursor="pointer"
                   mt="4"
@@ -285,6 +289,7 @@ export default function Index() {
             {datas.map((item, i) => {
               return (
                 <Flex
+                  key={i}
                   onClick={() => setData(item)}
                   cursor="pointer"
                   mt="4"
@@ -614,7 +619,6 @@ export default function Index() {
                         Empresa
                       </Text>
                       <Text mb="4" fontSize={["md", "lg"]} color="#000">
-                        {vaga.empresa.name}
                       </Text>
                       <Text fontSize={["md", "lg"]} color="#555">
                         Cargo
@@ -699,16 +703,14 @@ export default function Index() {
   }
 
   async function deleteVaga(id) {
-    await api
-      .delete(`http://localhost:5556/core/vaga/${id}`)
-      .then((response) => {
-        toast({
-          description: "Vaga deletada com sucesso!",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
+    await api.delete(`/core/vaga/${id}`).then((response) => {
+      toast({
+        description: "Vaga deletada com sucesso!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
       });
+    });
   }
 
   function useWindowSize() {
@@ -746,8 +748,6 @@ export default function Index() {
   }
 
   const size = useWindowSize();
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <>

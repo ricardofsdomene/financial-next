@@ -37,10 +37,18 @@ import {
   VStack,
   Divider,
   FormLabel,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionIcon,
+  AccordionPanel,
+  InputLeftAddon,
+  InputGroup,
+  InputRightAddon,
 } from "@chakra-ui/react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { FiCheck, FiEdit2 } from "react-icons/fi";
-
+import { BsPlus, BsPlusSquareDotted, BsPlusSquareFill } from "react-icons/bs";
 import { Input } from "../components/form/Input";
 
 import InputMask from "react-input-mask";
@@ -58,6 +66,7 @@ import {
   RiUserAddLine,
   RiUserFill,
   RiShieldUserLine,
+  RiSpeaker3Line,
 } from "react-icons/ri";
 
 import { AuthContext } from "../contexts/AuthContext";
@@ -78,6 +87,13 @@ export function Header() {
   const { user, updateName, signOut } = useContext(AuthContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  type Empresa = {
+    _id?: string;
+    description?: string;
+    avatar?: string;
+    name: string;
+  };
+
   const [drawer, setDrawer] = useState("Notificações");
   const [profileTab, setProfileTab] = useState("");
 
@@ -86,6 +102,8 @@ export function Header() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+
+  const [empresa, setEmpresa] = useState<Empresa>();
 
   const [cargo, setCargo] = useState("");
   const [tipo, setTipo] = useState("");
@@ -104,6 +122,8 @@ export function Header() {
   const habilidadeRef = useRef() as React.MutableRefObject<HTMLInputElement>;
   const beneficioRef = useRef() as React.MutableRefObject<HTMLInputElement>;
 
+  const [avatar, setAvatar] = useState("");
+
   const btnRef = useRef();
 
   const isWideVersion = useBreakpointValue({
@@ -115,6 +135,7 @@ export function Header() {
   const router = useRouter();
 
   type CreateVagaFormData = {
+    empresa: Empresa;
     cargo: string;
     tipo: string;
     formato: string;
@@ -126,6 +147,19 @@ export function Header() {
   };
 
   const createVagaFormSchema = yup.object().shape({
+    empresa: yup.object().required("Empresa obrigatória"),
+    cargo: yup.string().required("Cargo obrigatório"),
+    tipo: yup.string().required("Tipo obrigatório"),
+    formato: yup.string().required("Formato obrigatório"),
+    descricao: yup.string().required("Descrição obrigatória"),
+    localidade: yup.string().required("Localidade obrigatório"),
+    beneficios: yup.array(),
+    habilidades: yup.array(),
+    requisitos: yup.array(),
+  });
+
+  const createEmpresaFormSchema = yup.object().shape({
+    empresa: yup.object().required("Empresa obrigatória"),
     cargo: yup.string().required("Cargo obrigatório"),
     tipo: yup.string().required("Tipo obrigatório"),
     formato: yup.string().required("Formato obrigatório"),
@@ -140,17 +174,41 @@ export function Header() {
     resolver: yupResolver(createVagaFormSchema),
   });
 
+  const HandleCreateEmpresa: SubmitHandler<Empresa> = async (values) => {
+    await api
+      .post("/empresa", {
+        name: name,
+        avatar: avatar,
+        description: descricao,
+      })
+      .then((response) => {
+        if (response.data.message === "Empresa criada com sucesso!") {
+          toast({
+            description: response.data.message,
+            status: "success",
+            duration: 4000,
+            isClosable: false,
+          });
+          onClose();
+        } else {
+          toast({
+            description: "Tente novamente mais tarde",
+            status: "error",
+            duration: 4000,
+            isClosable: false,
+          });
+        }
+        console.log(response.data);
+      });
+  };
+
   const handleCreateVaga: SubmitHandler<CreateVagaFormData> = async (
     values
   ) => {
+    console.log(values);
     await api
       .post("/core/vaga", {
-        empresa: {
-          name: "My company",
-          _id: "0",
-          avatar:
-            "https://www.latinfinance.com/media/3939/btg-pactual.png?width=1200",
-        },
+        empresa: empresa,
         cargo: values.cargo,
         tipo: values.tipo,
         descricao: values.descricao,
@@ -161,11 +219,22 @@ export function Header() {
         localidade: values.localidade,
       })
       .then((response) => {
-        console.log(response.data);
         if (response.data.status === "Vaga adicionada com sucesso!") {
-          console.log(response.data.vaga);
+          console.log(response.data);
+          toast({
+            description: response.data.status,
+            status: "success",
+            duration: 4000,
+            isClosable: false,
+          });
+          onClose();
         } else {
-          console.log("Tente novamente mais tarde");
+          toast({
+            description: "Tente novamente mais tarde",
+            status: "error",
+            duration: 4000,
+            isClosable: false,
+          });
         }
       })
       .catch((error) => {
@@ -193,6 +262,11 @@ export function Header() {
       localStorage.setItem("emailEdited", "false");
     }, 600000); // 10 minutos
   }, []);
+
+  // const onFileChange = (event) => {
+  //   // Update the state
+  //   setAvatar({ selectedFile: event.target.files[0] });
+  // };
 
   function EditableControls({ param, value, edited }) {
     const {
@@ -296,13 +370,14 @@ export function Header() {
         <Flex align="center" ml="auto">
           <Menu>
             <MenuButton
+              _hover={{ borderBottom: "2px solid #d0d0d0" }}
               boxShadow="none"
               border="0px"
               h={43}
               px="4"
-              borderRadius="5"
+              borderRadius="0"
               as={Button}
-              bg="#e0e0e0"
+              bg="#eee"
               rightIcon={<RiArrowDropDownFill color="#000" fontSize={20} />}
               mr="2"
             >
@@ -310,8 +385,23 @@ export function Header() {
                 Ações
               </Text>
             </MenuButton>
-            <MenuList bg="#eee">
+            <MenuList bg="#eee" py="0">
+              <Flex
+                borderRadius="5"
+                px="10"
+                flexDir="column"
+                bg="#e9e9e9"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <img
+                  src="https://o.remove.bg/downloads/ac7e4241-4b0e-4dfd-ae84-ebf0e1ed4d85/undraw_Predictive_analytics_re_wxt8-removebg-preview.png"
+                  style={{ marginTop: 5, height: 120, width: 120 }}
+                />
+              </Flex>
               <MenuItem
+                justifyContent="space-between"
+                py="4"
                 onClick={() => {
                   setDrawer("AddVaga");
                   onOpen();
@@ -320,9 +410,20 @@ export function Header() {
                 fontSize="sm"
               >
                 Adicionar vaga
+                <Icon as={BsPlus} fontSize="md" color="#facebook.400" />
               </MenuItem>
-              <MenuItem color="#333" fontSize="sm">
+              <MenuItem
+                justifyContent="space-between"
+                py="4"
+                onClick={() => {
+                  setDrawer("AddEmpresa");
+                  onOpen();
+                }}
+                color="#333"
+                fontSize="sm"
+              >
                 Adicionar empresa
+                <Icon as={BsPlus} fontSize="md" color="#facebook.400" />
               </MenuItem>
             </MenuList>
           </Menu>
@@ -336,50 +437,96 @@ export function Header() {
             }}
           >
             <Flex
+              _hover={{ borderBottom: "2px solid #d0d0d0" }}
               alignItems="center"
               justifyContent="center"
-              borderRadius="5"
               h={43}
-              width={43}
               cursor="pointer"
               p="2"
               mr="4"
-              bg="#e0e0e0"
+              bg="#eeee"
             >
               <Icon as={RiNotificationLine} color="#333" fontSize={18} />
             </Flex>
           </Flex>
           <Menu>
-            <MenuButton>
+            <MenuButton color="#000">
               <Profile showProfileData={isWideVersion} />
             </MenuButton>
-            <MenuList bg="#eee">
+
+            <MenuList bg="#eee" py="0">
+              <Flex
+                py="5"
+                px="10"
+                flexDir="column"
+                bg="facebook.400"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <img
+                  src="https://github.com/0xrfsd.png"
+                  style={{ height: 50, width: 50, borderRadius: 50 }}
+                />
+                <Text mt="2" color="#FFF" fontWeight="bold" fontSize="lg">
+                  {user.name}
+                </Text>
+                <Text color="#FFF" fontSize="xs">
+                  {user.email}
+                </Text>
+                <Flex
+                  cursor="pointer"
+                  mt="3"
+                  onClick={() => {
+                    onOpen();
+                    setDrawer("Perfil");
+                    setProfileTab("Dados");
+                  }}
+                  bg="facebook.400"
+                  borderRadius="5"
+                  px="4"
+                  py="2"
+                  color="#FFF"
+                  fontSize="xs"
+                  _hover={{
+                    backgroundColor: "#FFF",
+                    transition: "0.5s",
+                    color: "#000",
+                  }}
+                >
+                  Gerenciar sua conta
+                </Flex>
+              </Flex>
+              <Link href="/vagas/create" passHref>
+                <MenuItem
+                  py="4"
+                  color="#333"
+                  fontSize="sm"
+                  justifyContent="space-between"
+                >
+                  Ajustes
+                  <Icon as={RiSettings5Line} fontSize="xs" color="#333" />
+                </MenuItem>
+              </Link>
+              <Link href="/vagas/create" passHref>
+                <MenuItem
+                  py="4"
+                  color="#333"
+                  fontSize="sm"
+                  justifyContent="space-between"
+                >
+                  Nos conte o que achou
+                  <Icon as={RiSpeaker3Line} fontSize="xs" color="#333" />
+                </MenuItem>
+              </Link>
               <MenuItem
-                onClick={() => {
-                  onOpen();
-                  setDrawer("Perfil");
-                  setProfileTab("Dados");
-                }}
+                py="4"
+                onClick={() => signOut()}
+                justifyContent="space-between"
                 color="#333"
                 fontSize="sm"
               >
-                <Icon as={RiShieldUserLine} fontSize={18} color="#333" mr="2" />
-                Meu perfil
-              </MenuItem>
-              <Link href="/vagas/create" passHref>
-                <MenuItem color="#333" fontSize="sm">
-                  <Icon
-                    as={RiSettings5Line}
-                    fontSize={18}
-                    color="#333"
-                    mr="2"
-                  />
-                  Ajustes
-                </MenuItem>
-              </Link>
-              <MenuItem onClick={() => signOut()} color="#333" fontSize="sm">
-                <Icon as={RiLogoutBoxRLine} fontSize={18} color="#333" mr="2" />
-                Log out
+                Sair da sua conta
+                <Icon as={RiLogoutBoxRLine} fontSize="xs" color="#333" />
               </MenuItem>
             </MenuList>
           </Menu>
@@ -534,7 +681,6 @@ export function Header() {
           as="label"
           h={43}
           w="100%"
-          mr={!isWideVersion && 3}
           align="center"
           alignSelf="center"
           color="gray.200"
@@ -569,6 +715,11 @@ export function Header() {
           {empresas.map((e, i) => {
             return (
               <Flex
+                onClick={() => {
+                  setEmpresa(e);
+                  setDrawer("AddVaga");
+                }}
+                mb="2"
                 borderRadius="5"
                 align="center"
                 px="5"
@@ -580,8 +731,11 @@ export function Header() {
                 bg="#e0e0e0"
                 justifyContent="space-between"
               >
-                {/* <Image src={e.avatar} width="33" height="33" /> */}
                 <Text color="#000">{e.name}</Text>
+                <img
+                  src={e.avatar}
+                  style={{ height: 20, width: 20, borderRadius: 5 }}
+                />
               </Flex>
             );
           })}
@@ -595,20 +749,122 @@ export function Header() {
       <Button
         width="100%"
         onClick={() => {
-          handleCreateVaga({
-            cargo,
-            tipo,
-            descricao,
-            formato,
-            requisitos,
-            habilidades,
-            beneficios,
-            localidade,
-          });
+          if (!empresa) {
+            toast({
+              description: "Voce precisa inserir a empresa",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!cargo) {
+            toast({
+              description: "Voce precisa inserir o cargo",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!tipo) {
+            toast({
+              description: "Voce precisa inserir o tipo",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!descricao) {
+            toast({
+              description: "Voce precisa inserir a descricao",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!formato) {
+            toast({
+              description: "Voce precisa inserir o formato",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!localidade) {
+            toast({
+              description: "Voce precisa inserir a localidade",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else {
+            setEmpresa(null);
+            setCargo("");
+            setTipo("");
+            setDescricao("");
+            setFormato("");
+            setLocalidade("");
+            setRequisito("");
+            setRequisitos(null);
+            setHabilidade("");
+            setHabilidades(null);
+            setBeneficio("");
+            setBeneficios(null);
+            handleCreateVaga({
+              empresa,
+              cargo,
+              tipo,
+              descricao,
+              formato,
+              requisitos,
+              habilidades,
+              beneficios,
+              localidade,
+            });
+          }
         }}
         bg="facebook.400"
       >
         <Text color="#FFF">Adicionar vaga</Text>
+      </Button>
+    );
+  }
+
+  function AddEmpresaFooter() {
+    return (
+      <Button
+        width="100%"
+        onClick={() => {
+          if (!name) {
+            toast({
+              description: "Voce precisa inserir o nome da empresa",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!descricao) {
+            toast({
+              description: "Voce precisa inserir a descricao da empresa",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!avatar) {
+            toast({
+              description: "Voce precisa inserir a logotipo da empresa",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else {
+            setName("");
+            setDescricao("");
+            setAvatar("");
+            HandleCreateEmpresa({
+              name: name,
+              description: descricao,
+              avatar: avatar,
+            });
+            onClose();
+          }
+        }}
+        bg="facebook.400"
+      >
+        <Text color="#FFF">Adicionar empresa</Text>
       </Button>
     );
   }
@@ -673,6 +929,8 @@ export function Header() {
             )}
             {drawer === "AddVaga"
               ? "Criar uma nova vaga"
+              : drawer === "AddEmpresa"
+              ? "Criar uma nova empresa"
               : drawer === "SelectEmpresa"
               ? "Selecionar empresa"
               : drawer}
@@ -682,11 +940,64 @@ export function Header() {
             {drawer === "Notificações" && <Notificacoes />}
             {drawer === "Perfil" && <Perfil />}
             {drawer === "SelectEmpresa" && <SelectEmpresa />}
+            {drawer === "AddEmpresa" && (
+              <Box
+                as="form"
+                overflowY="scroll"
+                flex="1"
+                px="1"
+                borderRadius={8}
+                onSubmit={handleSubmit(handleCreateVaga)}
+              >
+                <DrawerCloseButton bg="#e0e0e0" mt="2" mr="2" color="#000" />
+                <VStack>
+                  <div style={{ height: 10 }} />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Nome
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    onChange={(e) => setName(e.target.value)}
+                    color="#000"
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Descricao
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setDescricao(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Adicionar logotipo
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    placeholder="Insira o URL da imagem"
+                    color="#000"
+                    onChange={(e) => setAvatar(e.target.value)}
+                  />
+                  {/* <ChakraInput
+                    color="#000"
+                    px="1"
+                    onChange={(e) => {
+                      setAvatar(e.target.files[0]);
+                    }}
+                    style={{
+                      border: "0px solid transparent",
+                      borderRadius: 5,
+                    }}
+                    type="file"
+                  ></ChakraInput> */}
+                </VStack>
+              </Box>
+            )}
             {drawer === "AddVaga" && (
               <Box
                 as="form"
                 overflowY="scroll"
                 flex="1"
+                px="1"
                 borderRadius={8}
                 onSubmit={handleSubmit(handleCreateVaga)}
               >
@@ -703,14 +1014,37 @@ export function Header() {
                   <FormLabel color="#333" width="100%" textAlign="left" mt="3">
                     Empresa
                   </FormLabel>
-                  <ChakraInput
-                    onClick={() => setDrawer("SelectEmpresa")}
-                    mb="3"
-                    cursor="pointer"
-                    placeholder="Selecionar empresa"
-                    color="#000"
-                    onChange={(e) => setTipo(e.target.value)}
-                  />
+                  {empresa ? (
+                    <Flex
+                      onClick={() => {
+                        setDrawer("SelectEmpresa");
+                      }}
+                      borderRadius="5"
+                      align="center"
+                      px="5"
+                      justify="center"
+                      cursor="pointer"
+                      width="100%"
+                      height="43"
+                      bg="#e0e0e0"
+                      justifyContent="space-between"
+                    >
+                      <Text color="#000">{empresa.name}</Text>
+                      <img
+                        src={empresa.avatar}
+                        style={{ height: 20, width: 20, borderRadius: 5 }}
+                      />
+                    </Flex>
+                  ) : (
+                    <ChakraInput
+                      onClick={() => setDrawer("SelectEmpresa")}
+                      mb="3"
+                      cursor="pointer"
+                      placeholder="Selecionar empresa"
+                      color="#000"
+                      onChange={(e) => setTipo(e.target.value)}
+                    />
+                  )}
                   <FormLabel color="#333" width="100%" textAlign="left" mt="3">
                     Cargo
                   </FormLabel>
@@ -754,6 +1088,23 @@ export function Header() {
                   <FormLabel color="#333" width="100%" textAlign="left" mt="3">
                     Requisitos
                   </FormLabel>
+                  {requisitos && (
+                    <>
+                      {requisitos.map((requisito, i) => {
+                        return (
+                          <Text
+                            key={i}
+                            mr="4"
+                            width="100%"
+                            textAlign="left"
+                            color="#000"
+                          >
+                            •{requisito}
+                          </Text>
+                        );
+                      })}
+                    </>
+                  )}
                   <ChakraInput
                     ref={requisitoRef}
                     mb="3"
@@ -770,11 +1121,30 @@ export function Header() {
                     }}
                     bg="#e0e0e0"
                   >
-                    <Text color="#000">Adicionar requisito</Text>
+                    <Text fontWeight="normal" color="#000">
+                      Adicionar requisito
+                    </Text>
                   </Button>
                   <FormLabel color="#333" width="100%" textAlign="left" mt="3">
                     Habilidades
                   </FormLabel>
+                  {habilidades && (
+                    <>
+                      {habilidades.map((habilidade, i) => {
+                        return (
+                          <Text
+                            key={i}
+                            mr="4"
+                            width="100%"
+                            textAlign="left"
+                            color="#000"
+                          >
+                            •{habilidade}
+                          </Text>
+                        );
+                      })}
+                    </>
+                  )}
                   <ChakraInput
                     mt="5"
                     ref={habilidadeRef}
@@ -791,21 +1161,29 @@ export function Header() {
                     }}
                     bg="#e0e0e0"
                   >
-                    <Text color="#000">Adicionar habilidade</Text>
+                    <Text fontWeight="normal" color="#000">
+                      Adicionar habilidade
+                    </Text>
                   </Button>
-                  {beneficios && (
-                    <>
-                      {beneficios.map((beneficio, i) => {
-                        return (
-                          <Text mr="4" color="#000">
-                            {beneficio}
-                          </Text>
-                        );
-                      })}
-                    </>
-                  )}
                   <FormLabel color="#333" width="100%" textAlign="left" mt="3">
                     Beneficios
+                    {beneficios && (
+                      <>
+                        {beneficios.map((beneficio, i) => {
+                          return (
+                            <Text
+                              key={i}
+                              mr="4"
+                              width="100%"
+                              textAlign="left"
+                              color="#000"
+                            >
+                              •{beneficio}
+                            </Text>
+                          );
+                        })}
+                      </>
+                    )}
                   </FormLabel>
                   <ChakraInput
                     placeholder="Beneficios"
@@ -823,14 +1201,18 @@ export function Header() {
                     }}
                     bg="#e0e0e0"
                   >
-                    <Text color="#000">Adicionar beneficio</Text>
+                    <Text fontWeight="normal" color="#000">
+                      Adicionar beneficio
+                    </Text>
                   </Button>
+                  <Box h="1" />
                 </VStack>
               </Box>
             )}
           </DrawerBody>
 
           <DrawerFooter flexDir="column">
+            {drawer === "AddEmpresa" && <AddEmpresaFooter />}
             {drawer === "AddVaga" && <AddVagaFooter />}
             {drawer === "Notificações" && <NotificacoesFooter />}
             {drawer === "Perfil" && <PerfilFooter />}

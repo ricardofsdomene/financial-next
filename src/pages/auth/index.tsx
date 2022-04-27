@@ -108,7 +108,7 @@ export default function Auth() {
                   <Image
                     mt={-10}
                     ml={-8}
-                    src="http://100.99.231.68:5556/images/logo.png"
+                    src="http://192.168.1.60:5556/images/logo.png"
                     width={100}
                     height={100}
                   />
@@ -215,7 +215,7 @@ export default function Auth() {
                   <Image
                     mt={-10}
                     ml={-8}
-                    src="http://100.99.231.68:5556/images/logo.png"
+                    src="http://192.168.1.60:5556/images/logo.png"
                     width={100}
                     height={100}
                   />

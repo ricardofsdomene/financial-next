@@ -86,6 +86,7 @@ export function Filter() {
             {tipos.map((item, i) => {
               return (
                 <Flex
+                  key={i}
                   onClick={() => setTipo(item)}
                   cursor="pointer"
                   mt="3"
@@ -139,6 +140,7 @@ export function Filter() {
             {datas.map((item, i) => {
               return (
                 <Flex
+                  key={i}
                   onClick={() => setExperience(item)}
                   cursor="pointer"
                   mt="4"
@@ -196,6 +198,7 @@ export function Filter() {
             {formatos.map((item, i) => {
               return (
                 <Flex
+                  key={i}
                   onClick={() => setFormato(item)}
                   cursor="pointer"
                   mt="4"
@@ -251,6 +254,7 @@ export function Filter() {
             {datas.map((item, i) => {
               return (
                 <Flex
+                  key={i}
                   onClick={() => setData(item)}
                   cursor="pointer"
                   mt="4"

@@ -30,8 +30,8 @@ export function Profile({ showProfileData }: ProfileProps) {
         </>
       )}
       <Avatar
-        h={43}
-        w={43}
+        h={33}
+        w={33}
         name="Ricardo Fonseca"
         src="https://github.com/0xrfsd.png"
       />
