@@ -33,6 +33,7 @@ type TUpdate = {
   value: string;
 };
 
+
 type AuthContextData = {
   signIn: (credentials: SignInCredentials) => Promise<void>;
   signUp: (credentials: SignUpCredentials) => Promise<void>;
@@ -40,6 +41,10 @@ type AuthContextData = {
   user: User;
   isAuthenticated: boolean;
   updateName: (values: TUpdate) => Promise<any>;
+  refresh: boolean;
+  Refresh: (value: boolean) => void;
+  search: string;
+  Search: (value: string) => void;
 };
 
 type AuthProviderProps = {
@@ -49,7 +54,6 @@ type AuthProviderProps = {
 export const AuthContext = createContext({} as AuthContextData);
 
 let authChannel: BroadcastChannel;
-
 export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
@@ -61,8 +65,60 @@ export function signOut() {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>();
+  const [refresh, setRefresh] = useState(false);
   const isAuthenticated = !!user;
 
+  const [search, setSearch] = useState("");
+
+  const db = {
+    empresas: [
+      {
+        _id: "0",
+        name: "emp1"
+      },
+      {
+        id: "1",
+        name: "emp2"
+      }
+    ],
+    vagas: [
+      {
+        _id: "0",
+        name: "vaga1"
+      },
+      {
+        _id: "1",
+        name: "vaga2"
+      }
+    ],
+    users: [
+      {
+        _id: "0",
+        name: "users1"
+      },
+      {
+        _id: "1",
+        name: "users2"
+      }
+    ]
+  }
+
+  function Search(value: string) {
+    let arr = [];
+    arr.push(value);
+    let search = arr[0].toString();
+
+    if (db.empresas.includes(search)) {
+      console.log(db.empresas.includes(search))
+    }
+    if (db.vagas.includes(search)) {
+      console.log(db.vagas.includes(search))
+    }
+    if (db.users.includes(search)) {
+      console.log(db.users.includes(search))
+    }
+  }
+ 
   const router = useRouter();
   const toast = useToast();
 
@@ -78,12 +134,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const decoded: User = jwtDecode(token);
 
       api.get(`/auth/user/${decoded._id}`).then((res) => {
-        if(!res.data) {
+        if (!res.data) {
           destroyCookie(undefined, "nextauth.token");
           destroyCookie(undefined, "nextauth.refreshToken");
           router.push("/auth");
         } else {
-          setUser(res.data)
+          setUser(res.data);
         }
       });
 
@@ -122,6 +178,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
   }, []);
+
+  function Refresh(value) {
+    setRefresh(value);
+    setTimeout(() => {
+      setRefresh(false);
+    });
+  }
 
   async function signIn({ email, password }: SignInCredentials) {
     try {
@@ -245,7 +308,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ signIn, signUp, signOut, updateName, isAuthenticated, user }}
+      value={{
+        signIn,
+        signUp,
+        signOut,
+        updateName,
+        isAuthenticated,
+        user,
+        refresh,
+        Refresh,
+        search,
+        Search,
+      }}
     >
       {children}
     </AuthContext.Provider>

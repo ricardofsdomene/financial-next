@@ -17,11 +17,11 @@ import {
   useToast,
   Modal,
   ModalOverlay,
+  ModalContent,
   ModalHeader,
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  ModalContent,
   useDisclosure,
 } from "@chakra-ui/react";
 import Link from "next/link";
@@ -35,28 +35,27 @@ import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
 import { api } from "../../services/apiClient";
-import { useUsers } from "../../services/hooks/useUsers";
 import { AuthContext } from "../../contexts/AuthContext";
 
 export default function UserList() {
   const [page, setPage] = useState(1);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
   const { refresh } = useContext(AuthContext);
 
-  const [users, setUsers] = useState([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [empresas, setEmpresas] = useState([]);
 
   const [selected, setSelected] = useState([]);
 
   i18n.dayNames = [
+    "Dom",
     "Seg",
     "Ter",
     "Qua",
     "Qui",
     "Sex",
     "Sáb",
-    "Dom",
     "Domingo",
     "Segunda",
     "Terça",
@@ -93,31 +92,31 @@ export default function UserList() {
     "Dezembro",
   ];
 
-  async function getUsers() {
-    await api.get("/user/users").then((res) => {
-      setUsers(res.data.docs);
+  async function getEmpresas() {
+    await api.get("/empresa/empresas").then((res) => {
+      setEmpresas(res.data.docs);
     });
   }
 
   useEffect(() => {
-    getUsers();
+    getEmpresas();
   }, [refresh]);
 
   const toast = useToast();
 
-  async function deleteUser(id) {
+  async function deleteEmpresa(id) {
     await api
-      .delete(`/user/${id}`)
+      .delete(`/empresa/${id}`)
       .then(() => {
         toast({
-          title: "Deletado com sucesso",
+          title: "Deletada com sucesso",
           status: "success",
           duration: 1000,
           isClosable: true,
         });
       })
       .finally(() => {
-        getUsers();
+        getEmpresas();
       });
   }
 
@@ -130,20 +129,18 @@ export default function UserList() {
     <Box>
       <Header />
 
-      <Flex w="100%" my={["6"]} maxWidth={1480} mx="auto" px={["6"]}>
+      <Flex w="100%" my={["6"]} maxWidth={1480} mx="auto" px="2">
         <Box flex="1" borderRadius={8} bg="#eee" p="8">
           <Flex mb="8" justify="space-between" align="center">
             <Heading size="lg" color="#333" fontWeight="normal">
-              Usuários
+              Empresas
             </Heading>
 
             <Flex>
               {selected.length > 0 && (
                 <Button
                   onClick={() => {
-                    selected.map((s, i) => {
-                      deleteUser(s);
-                    });
+                    onOpen();
                   }}
                   cursor="pointer"
                   as="a"
@@ -158,7 +155,7 @@ export default function UserList() {
             </Flex>
           </Flex>
 
-          {!users ? (
+          {!empresas ? (
             <Flex justify="center">
               <Spinner />
             </Flex>
@@ -167,29 +164,29 @@ export default function UserList() {
               <Table colorScheme="whiteAlpha">
                 <Thead>
                   <Tr>
-                    <Th px={["4", "4", "6"]} color="gray.300" width="8">
-                      <Checkbox colorScheme="pink" />
+                    <Th px="6" color="gray.300" width="8">
+                      <Checkbox colorScheme="pink" disabled />
                     </Th>
-                    <Th>Usuário</Th>
+                    <Th fontSize="md">Usuário</Th>
                     {isWideVersion && <Th>Data de Cadastro</Th>}
                     <Th width="8"></Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {users.map((user, i) => {
+                  {empresas.map((empresa, i) => {
                     return (
                       <Tr key={i}>
                         <Td px={["6"]}>
                           <Checkbox
                             colorScheme="pink"
                             onChange={(e) => {
-                              if (selected.includes(user._id)) {
+                              if (selected.includes(empresa._id)) {
                                 let filtered = selected.filter(
-                                  (i) => i === user._ud
+                                  (item) => item !== empresa._id
                                 );
-                                setSelected([...selected, filtered]);
+                                setSelected(filtered);
                               } else {
-                                setSelected([...selected, user._id]);
+                                setSelected([...selected, empresa._id]);
                               }
                             }}
                           />
@@ -197,17 +194,17 @@ export default function UserList() {
                         <Td>
                           <Box>
                             <Text fontWeight="bold" color="#333">
-                              {user.name}
+                              {empresa.name}
                             </Text>
                             <Text fontSize="sm" color="gray.300">
-                              {user.email}
+                              {empresa.email}
                             </Text>
                           </Box>
                         </Td>
                         {isWideVersion && (
                           <Td color="#333">
                             {dateformat(
-                              user.createdAt,
+                              empresa.createdAt,
                               "ddd dd mmm yyyy HH:MM:ss"
                             )}
                           </Td>
@@ -248,7 +245,7 @@ export default function UserList() {
             <Button
               onClick={() => {
                 selected.map((s, i) => {
-                  deleteUser(s);
+                  deleteEmpresa(s);
                 });
                 onClose();
                 setSelected([]);

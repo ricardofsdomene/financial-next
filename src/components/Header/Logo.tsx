@@ -15,7 +15,7 @@ export function Logo() {
       align="flex-end"
     >
       <Image
-        src="http://192.168.1.60:5556/images/logo.png"
+        src="http://161.35.102.170:5556/images/logo.png"
         w="45"
         h="45"
         mr="2"

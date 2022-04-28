@@ -84,7 +84,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 
 export function Header() {
-  const { user, updateName, signOut } = useContext(AuthContext);
+  const { user, updateName, signOut, Refresh } = useContext(AuthContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   type Empresa = {
@@ -94,6 +94,13 @@ export function Header() {
     name: string;
   };
 
+  type User = {
+    _id?: string;
+    name: string;
+    email: string;
+    password: string;
+  };
+
   const [drawer, setDrawer] = useState("Notificações");
   const [profileTab, setProfileTab] = useState("");
 
@@ -101,6 +108,7 @@ export function Header() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
 
   const [empresa, setEmpresa] = useState<Empresa>();
@@ -174,7 +182,37 @@ export function Header() {
     resolver: yupResolver(createVagaFormSchema),
   });
 
+  const HandleCreateUser: SubmitHandler<User> = async (values) => {
+    console.log(values);
+    await api
+      .post("/auth/register", {
+        name: name,
+        email: email,
+        password: password,
+      })
+      .then((response) => {
+        if (response.data.status === "Usuário criado com sucesso!") {
+          toast({
+            description: response.data.status,
+            status: "success",
+            duration: 4000,
+            isClosable: false,
+          });
+          onClose();
+        } else {
+          toast({
+            description: "Tente novamente mais tarde",
+            status: "error",
+            duration: 4000,
+            isClosable: false,
+          });
+        }
+        console.log(response.data);
+      });
+  };
+
   const HandleCreateEmpresa: SubmitHandler<Empresa> = async (values) => {
+    console.log(values);
     await api
       .post("/empresa", {
         name: name,
@@ -358,12 +396,21 @@ export function Header() {
 
         {isWideVersion && (
           <Flex ml="10">
-            <Text color="#777" mr="3" cursor="pointer" fontSize="sm">
-              Controle de Usuários
-            </Text>
-            <Text color="#777" mr="3" cursor="pointer" fontSize="sm">
-              Controle de Empresas
-            </Text>
+            <Link href="/users">
+              <Text color="#777" mr="3" cursor="pointer" fontSize="sm">
+                Controle de Usuários
+              </Text>
+            </Link>
+            <Link href="/vagas">
+              <Text color="#777" mr="3" cursor="pointer" fontSize="sm">
+                Controle de Vagas
+              </Text>
+            </Link>
+            <Link href="/empresas">
+              <Text color="#777" mr="3" cursor="pointer" fontSize="sm">
+                Controle de Empresas
+              </Text>
+            </Link>
           </Flex>
         )}
 
@@ -386,19 +433,6 @@ export function Header() {
               </Text>
             </MenuButton>
             <MenuList bg="#eee" py="0">
-              <Flex
-                borderRadius="5"
-                px="10"
-                flexDir="column"
-                bg="#e9e9e9"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <img
-                  src="https://o.remove.bg/downloads/ac7e4241-4b0e-4dfd-ae84-ebf0e1ed4d85/undraw_Predictive_analytics_re_wxt8-removebg-preview.png"
-                  style={{ marginTop: 5, height: 120, width: 120 }}
-                />
-              </Flex>
               <MenuItem
                 justifyContent="space-between"
                 py="4"
@@ -423,6 +457,19 @@ export function Header() {
                 fontSize="sm"
               >
                 Adicionar empresa
+                <Icon as={BsPlus} fontSize="md" color="#facebook.400" />
+              </MenuItem>
+              <MenuItem
+                justifyContent="space-between"
+                py="4"
+                onClick={() => {
+                  setDrawer("AddUser");
+                  onOpen();
+                }}
+                color="#333"
+                fontSize="sm"
+              >
+                Adicionar usuário
                 <Icon as={BsPlus} fontSize="md" color="#facebook.400" />
               </MenuItem>
             </MenuList>
@@ -463,15 +510,12 @@ export function Header() {
                 justifyContent="center"
                 alignItems="center"
               >
-                <img
-                  src="https://github.com/0xrfsd.png"
-                  style={{ height: 50, width: 50, borderRadius: 50 }}
-                />
+                <Avatar h={50} w={50} name={user && user.name} />
                 <Text mt="2" color="#FFF" fontWeight="bold" fontSize="lg">
-                  {user.name}
+                  {user && user.name}
                 </Text>
                 <Text color="#FFF" fontSize="xs">
-                  {user.email}
+                  {user && user.email}
                 </Text>
                 <Flex
                   cursor="pointer"
@@ -815,6 +859,7 @@ export function Header() {
               beneficios,
               localidade,
             });
+            Refresh(true);
           }
         }}
         bg="facebook.400"
@@ -851,15 +896,62 @@ export function Header() {
               isClosable: false,
             });
           } else {
-            setName("");
-            setDescricao("");
-            setAvatar("");
             HandleCreateEmpresa({
               name: name,
               description: descricao,
               avatar: avatar,
             });
+            Refresh(true);
+            setName("");
+            setDescricao("");
+            setAvatar("");
             onClose();
+          }
+        }}
+        bg="facebook.400"
+      >
+        <Text color="#FFF">Adicionar empresa</Text>
+      </Button>
+    );
+  }
+
+  function AddUserFooter() {
+    return (
+      <Button
+        width="100%"
+        onClick={() => {
+          if (!name) {
+            toast({
+              description: "Voce precisa inserir o nome do usuário",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!email) {
+            toast({
+              description: "Voce precisa inserir o email do usuário",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else if (!password) {
+            toast({
+              description: "Voce precisa inserir a senha do usuário",
+              status: "error",
+              duration: 4000,
+              isClosable: false,
+            });
+          } else {
+            setName("");
+            setEmail("");
+            setPassword("");
+            onClose();
+            HandleCreateUser({
+              name: name,
+              email: email,
+              password: password,
+            });
+            Refresh(true);
           }
         }}
         bg="facebook.400"
@@ -933,6 +1025,8 @@ export function Header() {
               ? "Criar uma nova empresa"
               : drawer === "SelectEmpresa"
               ? "Selecionar empresa"
+              : drawer === "AddUser"
+              ? "Adicionar usuário"
               : drawer}
           </DrawerHeader>
           <Divider />
@@ -977,18 +1071,45 @@ export function Header() {
                     color="#000"
                     onChange={(e) => setAvatar(e.target.value)}
                   />
-                  {/* <ChakraInput
+                </VStack>
+              </Box>
+            )}
+            {drawer === "AddUser" && (
+              <Box
+                as="form"
+                overflowY="scroll"
+                flex="1"
+                px="1"
+                borderRadius={8}
+                onSubmit={handleSubmit(handleCreateVaga)}
+              >
+                <DrawerCloseButton bg="#e0e0e0" mt="2" mr="2" color="#000" />
+                <VStack>
+                  <div style={{ height: 10 }} />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Nome
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    onChange={(e) => setName(e.target.value)}
                     color="#000"
-                    px="1"
-                    onChange={(e) => {
-                      setAvatar(e.target.files[0]);
-                    }}
-                    style={{
-                      border: "0px solid transparent",
-                      borderRadius: 5,
-                    }}
-                    type="file"
-                  ></ChakraInput> */}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    E-mail
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <FormLabel color="#333" width="100%" textAlign="left" mt="3">
+                    Senha
+                  </FormLabel>
+                  <ChakraInput
+                    mb="3"
+                    color="#000"
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </VStack>
               </Box>
             )}
@@ -1214,6 +1335,7 @@ export function Header() {
           <DrawerFooter flexDir="column">
             {drawer === "AddEmpresa" && <AddEmpresaFooter />}
             {drawer === "AddVaga" && <AddVagaFooter />}
+            {drawer === "AddUser" && <AddUserFooter />}
             {drawer === "Notificações" && <NotificacoesFooter />}
             {drawer === "Perfil" && <PerfilFooter />}
           </DrawerFooter>

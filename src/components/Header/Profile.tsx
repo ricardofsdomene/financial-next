@@ -32,8 +32,7 @@ export function Profile({ showProfileData }: ProfileProps) {
       <Avatar
         h={33}
         w={33}
-        name="Ricardo Fonseca"
-        src="https://github.com/0xrfsd.png"
+        name={user && user.name}
       />
     </Flex>
   );

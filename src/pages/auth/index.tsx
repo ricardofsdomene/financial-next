@@ -24,7 +24,7 @@ import React, { useContext, useEffect, useReducer, useState } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 
 export default function Auth() {
-  const { user, signIn, signUp } = useContext(AuthContext);
+  const { user, signIn, signUp, refresh } = useContext(AuthContext);
 
   const router = useRouter();
   const toast = useToast();
@@ -108,7 +108,7 @@ export default function Auth() {
                   <Image
                     mt={-10}
                     ml={-8}
-                    src="http://192.168.1.60:5556/images/logo.png"
+                    src="http://161.35.102.170:5556/images/logo.png"
                     width={100}
                     height={100}
                   />
@@ -215,7 +215,7 @@ export default function Auth() {
                   <Image
                     mt={-10}
                     ml={-8}
-                    src="http://192.168.1.60:5556/images/logo.png"
+                    src="http://161.35.102.170:5556/images/logo.png"
                     width={100}
                     height={100}
                   />
