@@ -35,7 +35,6 @@ import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
 import { api } from "../../services/apiClient";
-import { useUsers } from "../../services/hooks/useUsers";
 import { AuthContext } from "../../contexts/AuthContext";
 
 export default function UserList() {
